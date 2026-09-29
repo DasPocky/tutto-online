@@ -7,7 +7,7 @@ import { Confirm } from "@/components/Confirm";
 import { PlayerManager } from "./PlayerManager";
 import { ShareCode } from "./ShareCode";
 import { CardGuide } from "./CardGuide";
-import { DiceModePicker } from "./DiceModePicker";
+import { GameSettings } from "./GameSettings";
 import { setViewMode, useViewMode } from "@/hooks/useViewMode";
 import { cn, fmt } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Menü</SheetTitle>
-          <SheetDescription>{isHost ? "Du leitest das Spiel." : "Nur der Host kann Spieler und Spielstand ändern."}</SheetDescription>
+          <SheetDescription>{isHost ? "Du leitest das Spiel und legst die Einstellungen fest." : "Nur der Host kann Spieler, Einstellungen und Spielstand ändern."}</SheetDescription>
         </SheetHeader>
         <div className="overflow-y-auto px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-navy-950/50 p-1 ring-1 ring-inset ring-border" role="radiogroup" aria-label="Ansicht">
@@ -54,7 +54,7 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
 
           {code && <ShareCode code={code} />}
 
-          <DiceModePicker state={state} editable={isHost} onAction={onAction} className="mt-4" />
+          <GameSettings state={state} editable={isHost} online={!!code} onAction={onAction} className="mt-5" />
 
           {isHost && (
             <div className="mt-4 grid gap-2">

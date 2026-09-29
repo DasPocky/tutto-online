@@ -57,7 +57,7 @@ function Art({ card }: { card: CardType }) {
       return (
         <g>
           {[1, 2, 3, 4, 5, 6].map((n, i) => {
-            const x = 9 + (i % 3) * 29, y = 14 + Math.floor(i / 3) * 29, k = 2.3;
+            const x = 9 + (i % 3) * 29, y = 22 + Math.floor(i / 3) * 29, k = 2.3;
             return (
               <g key={n} transform={`translate(${x} ${y})`}>
                 <rect width="23" height="23" rx="4.5" fill={tint(c, 0.12)} stroke={c} strokeWidth="1.6" />
@@ -65,23 +65,24 @@ function Art({ card }: { card: CardType }) {
               </g>
             );
           })}
-          <text x="50" y="90" textAnchor="middle" fontSize="15" fontWeight="800" fill={c}>2000</text>
         </g>
       );
     case "x2":
       return (
         <g>
-          <circle cx="50" cy="50" r="40" fill={tint(c, 0.12)} stroke={c} strokeWidth="2.5" />
-          <text x="50" y="65" textAnchor="middle" fontSize="42" fontWeight="800" fill={c}>×2</text>
+          <circle cx="40" cy="54" r="28" fill={tint(c, 0.12)} stroke={c} strokeWidth="2.5" />
+          <circle cx="60" cy="46" r="28" fill="#fdfdfb" stroke={c} strokeWidth="2.5" />
+          <circle cx="60" cy="46" r="28" fill={tint(c, 0.12)} />
+          <text x="60" y="58" textAnchor="middle" fontSize="32" fontWeight="800" fill={c}>×2</text>
         </g>
       );
     case "pm":
       return (
         <g>
-          <rect x="10" y="14" width="80" height="32" rx="9" fill={tint("#4f8a5e", 0.14)} />
-          <text x="50" y="38" textAnchor="middle" fontSize="21" fontWeight="800" fill="#4f8a5e">+1000</text>
-          <rect x="10" y="54" width="80" height="32" rx="9" fill={tint("#a84a57", 0.14)} />
-          <text x="50" y="78" textAnchor="middle" fontSize="21" fontWeight="800" fill="#a84a57">−1000</text>
+          <circle cx="32" cy="50" r="24" fill={tint("#4f8a5e", 0.14)} stroke="#4f8a5e" strokeWidth="2.5" />
+          <path d="M32 38 V62 M20 50 H44" stroke="#4f8a5e" strokeWidth="5" strokeLinecap="round" />
+          <circle cx="68" cy="50" r="24" fill={tint("#a84a57", 0.14)} stroke="#a84a57" strokeWidth="2.5" />
+          <path d="M56 50 H80" stroke="#a84a57" strokeWidth="5" strokeLinecap="round" />
         </g>
       );
     default: {
@@ -93,8 +94,8 @@ function Art({ card }: { card: CardType }) {
       return (
         <g>
           <polygon points={ray} fill={tint(c, 0.16)} />
-          <circle cx="50" cy="50" r="32" fill="none" stroke={c} strokeWidth="2.5" />
-          <text x="50" y="59" textAnchor="middle" fontSize="26" fontWeight="800" fill={c}>{card.big}</text>
+          <circle cx="50" cy="50" r="26" fill="none" stroke={c} strokeWidth="2.5" />
+          <path d="M50 34 L54.7 44.6 66 45.6 57.4 53.2 60 64.4 50 58.4 40 64.4 42.6 53.2 34 45.6 45.3 44.6 Z" fill={c} />
         </g>
       );
     }
@@ -103,19 +104,33 @@ function Art({ card }: { card: CardType }) {
 
 const TITLE: Partial<Record<CardType["id"], string>> = { b200: "Bonus", b300: "Bonus", b400: "Bonus", b500: "Bonus", b600: "Bonus", pm: "Plus / Minus", x2: "Verdoppeln" };
 
-/** Vorderseite im Stil der Tutto-Karten: weiße Karte, feiner farbiger Rahmen, Titel, ruhiges Bild. */
+/** Kurztext unten auf Karten ohne festen Punktwert */
+const FOOT: Partial<Record<CardType["id"], string>> = { fire: "Bis zur Niete", stop: "Zug vorbei", clover: "Sofort-Sieg" };
+
+/**
+ * Vorderseite im Stil der Tutto-Karten: weiße Karte, feiner farbiger Rahmen, Titel, ruhiges Bild
+ * und unten immer an derselben Stelle der Punktwert.
+ */
 export function CardFace({ card }: { card: CardType }) {
   const title = TITLE[card.id] ?? card.name;
-  const showSub = card.sub.toLowerCase() !== title.toLowerCase() && card.id !== "street";
   return (
     <div className="size-full rounded-[7cqw] bg-paper p-[4cqw]">
       <div className="flex size-full flex-col items-center rounded-[4.5cqw] px-[5cqw] pt-[7cqw] pb-[6cqw] text-paper-ink" style={{ boxShadow: `inset 0 0 0 1.6cqw ${card.color}` }}>
         <div className="text-[8.5cqw] leading-none font-extrabold tracking-[0.08em] uppercase" style={{ color: card.color }}>{title}</div>
         <div className="mt-[2.5cqw] h-[0.9cqw] w-[18cqw] rounded-full" style={{ background: tint(card.color, 0.45) }} />
-        <svg viewBox="0 0 100 100" className="my-[4cqw] min-h-0 w-[84%] flex-1" aria-hidden="true">
+        <svg viewBox="0 0 100 100" className="my-[3cqw] min-h-0 w-[80%] flex-1" aria-hidden="true">
           <Art card={card} />
         </svg>
-        <div className="min-h-[1lh] text-center text-[7cqw] leading-tight font-semibold text-paper-ink/60">{showSub ? card.sub : ""}</div>
+        <div className="flex h-[15cqw] min-w-[56%] items-center justify-center gap-[1.5cqw] rounded-full px-[5cqw] whitespace-nowrap" style={{ background: tint(card.color, 0.13), color: card.color }}>
+          {card.value ? (
+            <>
+              <b className="text-[10cqw] leading-none font-extrabold tabular-nums">{card.value}</b>
+              <span className="text-[6cqw] leading-none font-semibold opacity-80">Punkte</span>
+            </>
+          ) : (
+            <span className="text-[7cqw] leading-none font-bold">{FOOT[card.id]}</span>
+          )}
+        </div>
       </div>
     </div>
   );

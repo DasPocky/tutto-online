@@ -4,6 +4,7 @@ Kartenstapel und Punktezähler für das Würfelspiel **Tutto**, gebaut mit React
 
 - **Online-Räume:** Der Host erstellt einen Raum mit PIN. Mitspieler öffnen den Link, geben Name und PIN ein und sehen Karten, Punkte und Zugreihenfolge live.
 - **Lokal:** Alle spielen an einem Gerät, ohne Server. Der Spielstand bleibt im Browser.
+- **Einstellungen (Host):** Würfel wählen und festlegen, wer ziehen, würfeln und eintragen darf: wer dran ist (Standard), alle für jeden oder nur der Host. Der Host darf immer.
 - **Würfel wählbar:** echte Würfel am Tisch (Punkte selbst eintippen) oder der App-Würfel, der würfelt, die Auswahl prüft und Karten wie Bonus, x2, Straße, Plus/Minus, Feuerwerk und Kleeblatt automatisch wertet. Online würfelt der Server, alle sehen denselben Wurf. Die Zufallszahlen kommen aus `crypto.getRandomValues` ohne Modulo-Verzerrung.
 - **Karten & Regeln:** Über das ⓘ neben der Karte oder im Menü lässt sich jede Karte ausführlich nachlesen.
 - **Ansicht „Einfach“ oder „Voll“** (im Menü, pro Gerät): große Tasten und wenig Text oder alle Tasten und Infos. Das Spiel passt ohne Scrollen auf einen Handy-Bildschirm und lässt sich als App zum Home-Bildschirm hinzufügen.
@@ -60,7 +61,7 @@ Browser ──HTTP──▶ Worker ──▶ statische React-App (dist/client)
 - Nach 8 falschen PINs ist der Raum 10 Minuten gesperrt.
 - Nach dem Beitritt merkt sich das Gerät einen geheimen Token. Beim Neuladen oder nach Funkloch geht es ohne PIN weiter.
 - Wer den Raum erstellt, ist Host. Nur der Host kann starten, Spieler entfernen oder umsortieren, das Spielziel ändern, rückgängig machen und neu mischen.
-- Punkte eintragen und Karten ziehen darf der Spieler am Zug oder der Host. So kann der Host auch für jemanden ohne Handy spielen.
+- Wer Punkte einträgt und Karten zieht, stellt der Host ein (Standard: wer dran ist). Der Host darf immer, so kann er auch für jemanden ohne Handy spielen.
 - Räume ohne Aktivität werden nach 48 Stunden automatisch gelöscht. Der Host kann einen Raum im Menü auch sofort löschen.
 
 ### Wo liegen welche Daten?

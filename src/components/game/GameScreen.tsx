@@ -1,9 +1,9 @@
-import { CARD_BY_ID, type Action, type GameState } from "@shared/game";
+import { canPlayTurn, CARD_BY_ID, type Action, type GameState } from "@shared/game";
 import { Button } from "@/components/ui/button";
 import { Confirm } from "@/components/Confirm";
 import { CardGuide } from "./CardGuide";
 import { DiceActions, DicePanel } from "./Dice";
-import { DiceModePicker } from "./DiceModePicker";
+import { GameSettings } from "./GameSettings";
 import { GameCard } from "./GameCard";
 import { MenuSheet } from "./MenuSheet";
 import { PlayerManager } from "./PlayerManager";
@@ -32,7 +32,7 @@ export function GameScreen(props: Props) {
   const mode = useViewMode();
   const isHost = me === null || me === state.hostId;
   const cur = state.players[state.cur];
-  const canAct = isHost || me === cur?.id;
+  const canAct = canPlayTurn(state, me);
   const winner = state.winnerId ? state.players.find((p) => p.id === state.winnerId) : null;
   const playing = state.started && !winner;
   const appDice = state.diceMode === "app";
@@ -122,7 +122,7 @@ export function GameScreen(props: Props) {
                 </div>
               ) : (
                 <div className="glass rounded-xl py-4 text-center text-muted-foreground">
-                  Warte auf <b className="text-foreground">{cur?.name}</b>
+                  {state.entry === "host" ? <>Der Host spielt für <b className="text-foreground">{cur?.name}</b></> : <>Warte auf <b className="text-foreground">{cur?.name}</b></>}
                 </div>
               )}
             </div>
@@ -178,7 +178,7 @@ function Lobby({ state, me, online, code, onAction, onAddLocal, isHost }: Props 
           : "Die Reihenfolge ist die Zugreihenfolge."}
       </p>
       <PlayerManager state={state} me={me} online={online} editable={isHost} onAction={onAction} onAddLocal={onAddLocal} />
-      <DiceModePicker state={state} editable={isHost} onAction={onAction} className="mt-5" />
+      <GameSettings state={state} editable={isHost} online={!!code} onAction={onAction} className="mt-6" />
       {isHost ? (
         <Button size="lg" className="mt-6 w-full" disabled={!state.players.length} onClick={() => onAction({ type: "start" })}>
           Spiel starten
