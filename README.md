@@ -4,6 +4,7 @@ Kartenstapel und Punktezähler für das Würfelspiel **Tutto**, gebaut mit React
 
 - **Online-Räume:** Der Host erstellt einen Raum mit PIN. Mitspieler öffnen den Link, geben Name und PIN ein und sehen Karten, Punkte und Zugreihenfolge live.
 - **Lokal:** Alle spielen an einem Gerät, ohne Server. Der Spielstand bleibt im Browser.
+- **Ansicht „Einfach“ oder „Voll“** (im Menü, pro Gerät): große Tasten und wenig Text oder alle Tasten und Infos. Das Spiel passt ohne Scrollen auf einen Handy-Bildschirm und lässt sich als App zum Home-Bildschirm hinzufügen.
 
 ## Voraussetzungen
 
@@ -58,7 +59,21 @@ Browser ──HTTP──▶ Worker ──▶ statische React-App (dist/client)
 - Nach dem Beitritt merkt sich das Gerät einen geheimen Token. Beim Neuladen oder nach Funkloch geht es ohne PIN weiter.
 - Wer den Raum erstellt, ist Host. Nur der Host kann starten, Spieler entfernen oder umsortieren, das Spielziel ändern, rückgängig machen und neu mischen.
 - Punkte eintragen und Karten ziehen darf der Spieler am Zug oder der Host. So kann der Host auch für jemanden ohne Handy spielen.
-- Räume ohne Aktivität werden nach 48 Stunden automatisch gelöscht.
+- Räume ohne Aktivität werden nach 48 Stunden automatisch gelöscht. Der Host kann einen Raum im Menü auch sofort löschen.
+
+### Wo liegen welche Daten?
+
+| Ort | Inhalt | Wann gelöscht |
+| --- | --- | --- |
+| Durable Object `TuttoRoom` (Cloudflare, ein Objekt pro Raumcode) | PIN-Hash + Salt, Spielernamen, Punkte, Verlauf, Kartenstapel, Wiederverbindungs-Tokens, Fehlversuche | 48 h nach der letzten Aktion (Alarm) oder sofort über „Raum löschen“ |
+| `localStorage` im Browser | eigener Name, Token pro Raum, lokaler Spielstand, Ansichtsmodus | beim Verlassen des Raums bzw. vom Nutzer |
+| `sessionStorage` im Browser | Name + PIN für genau einen Beitritt | direkt nach dem Beitritt |
+
+IP-Adressen oder Konten speichert die App nicht. Cloudflare selbst protokolliert Anfragen (Observability ist in `wrangler.jsonc` aktiv).
+
+### Was passiert bei einem neuen Deploy?
+
+Die gespeicherten Räume bleiben erhalten, denn der Speicher der Durable Objects ist unabhängig vom Code. Offene WebSocket-Verbindungen werden beim Deploy kurz getrennt, die App verbindet sich automatisch mit ihrem Token neu. Wichtig bei Code-Änderungen: Den Klassennamen `TuttoRoom` nicht umbenennen (sonst braucht es eine neue Migration in `wrangler.jsonc`) und das Format von `GameState` rückwärtskompatibel halten.
 
 ### Kostenlose Limits
 

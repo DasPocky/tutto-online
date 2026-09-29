@@ -38,6 +38,16 @@ export function OnlineRoom({ code }: { code: string }) {
     );
   }
 
+  if (room.status === "closed") {
+    return (
+      <Center>
+        <h1 className="text-3xl font-extrabold tracking-tight">Raum beendet</h1>
+        <p className="mt-2 text-muted-foreground">{room.error}</p>
+        <Button className="mt-6 w-full" onClick={() => navigate("/")}>Zur Startseite</Button>
+      </Center>
+    );
+  }
+
   if (room.status === "failed") {
     return (
       <Center>
@@ -62,6 +72,7 @@ export function OnlineRoom({ code }: { code: string }) {
       reconnecting={room.status === "connecting"}
       onAction={room.send}
       onLeave={leave}
+      onCloseRoom={room.closeRoom}
     />
   );
 }
@@ -73,7 +84,7 @@ function JoinForm({ code, error, onSubmit }: { code: string; error: string | nul
   return (
     <Center>
       <div className="text-sm text-muted-foreground">Raum</div>
-      <h1 className="text-4xl font-extrabold tracking-[0.12em]">{code}</h1>
+      <h1 className="text-4xl font-extrabold tracking-[0.18em]">{code}</h1>
       <Card className="mt-6 grid gap-4 text-left">
         <form className="grid gap-4" onSubmit={(e) => {
           e.preventDefault(); if (!ok) return;

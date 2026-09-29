@@ -121,6 +121,15 @@ export class TuttoRoom extends DurableObject<Env> {
       return;
     }
 
+    if (msg.type === "closeRoom") {
+      if (playerId !== this.room.game.hostId) {
+        this.send(ws, { type: "error", message: "Das darf nur der Host." });
+        return;
+      }
+      await this.destroy("Der Host hat den Raum gelöscht.");
+      return;
+    }
+
     if (msg.type === "action" && msg.action && typeof msg.action === "object") {
       try {
         this.room.game = applyAction(this.room.game, msg.action, playerId);
@@ -145,9 +154,16 @@ export class TuttoRoom extends DurableObject<Env> {
 
   /** Läuft, wenn 48 h lang nichts passiert ist: Raum löschen. */
   async alarm(): Promise<void> {
+    await this.destroy("Der Raum ist nach 48 Stunden ohne Aktivität abgelaufen.");
+  }
+
+  /** Alle rauswerfen und sämtliche gespeicherten Daten des Raums löschen. */
+  private async destroy(message: string): Promise<void> {
     for (const ws of this.ctx.getWebSockets()) {
-      try { ws.close(4410, "Raum abgelaufen"); } catch { /* egal */ }
+      this.send(ws, { type: "error", code: "closed", fatal: true, message });
+      try { ws.close(4410, "closed"); } catch { /* egal */ }
     }
+    await this.ctx.storage.deleteAlarm();
     await this.ctx.storage.deleteAll();
     this.room = null;
   }

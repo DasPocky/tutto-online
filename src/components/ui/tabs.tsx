@@ -7,7 +7,7 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
 }
 
 function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
-  return <TabsPrimitive.List data-slot="tabs-list" className={cn("grid grid-cols-2 gap-1 rounded-xl bg-black/25 p-1", className)} {...props} />;
+  return <TabsPrimitive.List data-slot="tabs-list" className={cn("grid grid-cols-2 gap-1 rounded-xl bg-navy-950/50 p-1 ring-1 ring-inset ring-border", className)} {...props} />;
 }
 
 function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
@@ -15,7 +15,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "h-11 rounded-lg font-semibold text-muted-foreground outline-none transition focus-visible:ring-[3px] focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+        "h-11 rounded-lg font-semibold text-muted-foreground outline-none transition focus-visible:ring-[3px] focus-visible:ring-ring data-[state=active]:bg-navy-600 data-[state=active]:text-foreground data-[state=active]:shadow-md",
         className,
       )}
       {...props}

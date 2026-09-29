@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Confirm } from "@/components/Confirm";
 import { PlayerManager } from "./PlayerManager";
 import { ShareCode } from "./ShareCode";
-import { fmt } from "@/lib/utils";
+import { setViewMode, useViewMode } from "@/hooks/useViewMode";
+import { cn, fmt } from "@/lib/utils";
 
-export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLocal, onLeave }: {
+export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLocal, onLeave, onCloseRoom }: {
   state: GameState;
   me: string | null;
   online: Set<string> | null;
@@ -17,7 +18,9 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
   onAction: (a: Action) => void;
   onAddLocal?: (name: string) => void;
   onLeave: () => void;
+  onCloseRoom?: () => void;
 }) {
+  const mode = useViewMode();
   const counts = new Map<string, number>();
   for (const id of state.pile) counts.set(id, (counts.get(id) ?? 0) + 1);
 
@@ -32,6 +35,17 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
           <SheetDescription>{isHost ? "Du leitest das Spiel." : "Nur der Host kann Spieler und Spielstand ändern."}</SheetDescription>
         </SheetHeader>
         <div className="overflow-y-auto px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-navy-950/50 p-1 ring-1 ring-inset ring-border" role="radiogroup" aria-label="Ansicht">
+            {([["simple", "Einfach", "Große Tasten"], ["full", "Voll", "Alle Infos"]] as const).map(([m, label, hint]) => (
+              <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setViewMode(m)}
+                className={cn("rounded-lg py-2 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-ring",
+                  mode === m ? "bg-navy-600 shadow-md" : "text-muted-foreground")}>
+                <div className="font-semibold">{label}</div>
+                <div className="text-xs text-muted-foreground">{hint}</div>
+              </button>
+            ))}
+          </div>
+
           {code && <ShareCode code={code} />}
 
           {isHost && (
@@ -94,6 +108,16 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
           <Button variant="ghost" className="mt-6 w-full text-muted-foreground" onClick={onLeave}>
             {code ? "Raum verlassen" : "Zur Startseite"}
           </Button>
+          {code && isHost && onCloseRoom && (
+            <Confirm
+              title="Raum endgültig löschen?"
+              description="Spielstand, Namen und Verlauf werden sofort vom Server gelöscht. Alle Mitspieler fliegen raus."
+              confirmLabel="Löschen"
+              onConfirm={onCloseRoom}
+            >
+              <Button variant="destructive" className="mt-2 w-full">Raum löschen</Button>
+            </Confirm>
+          )}
         </div>
       </SheetContent>
     </Sheet>

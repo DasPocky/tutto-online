@@ -6,7 +6,7 @@ function Toaster(props: ToasterProps) {
       theme="dark"
       position="top-center"
       toastOptions={{
-        style: { background: "var(--primary)", color: "var(--primary-foreground)", border: "none", fontFamily: "inherit", fontWeight: 600 },
+        style: { background: "var(--navy-600)", color: "var(--foreground)", border: "none", fontFamily: "inherit", fontWeight: 600 },
       }}
       {...props}
     />

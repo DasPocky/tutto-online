@@ -4,7 +4,7 @@ import type { Action, GameState } from "@shared/game";
 import type { ClientMessage, ServerMessage } from "@shared/protocol";
 import { credsKey, readJSON, remove, writeJSON, type RoomCreds } from "@/lib/storage";
 
-export type RoomStatus = "checking" | "missing" | "needsJoin" | "connecting" | "ready" | "failed";
+export type RoomStatus = "checking" | "missing" | "needsJoin" | "connecting" | "ready" | "failed" | "closed";
 
 export interface JoinData { name: string; pin: string }
 
@@ -54,9 +54,9 @@ export function useRoom(code: string, join: JoinData | null, attempt: number) {
         } else if (msg.type === "error") {
           if (msg.fatal) {
             stopped = true;
-            if (msg.code === "bad_pin" || msg.code === "kicked" || msg.code === "not_joined") remove(credsKey(code));
+            if (msg.code === "bad_pin" || msg.code === "kicked" || msg.code === "not_joined" || msg.code === "closed") remove(credsKey(code));
             setError(msg.message);
-            setStatus(msg.code === "bad_pin" || msg.code === "rejected" || msg.code === "not_joined" ? "needsJoin" : "failed");
+            setStatus(msg.code === "closed" ? "closed" : msg.code === "bad_pin" || msg.code === "rejected" || msg.code === "not_joined" ? "needsJoin" : "failed");
             ws.close();
           } else {
             toast(msg.message);
@@ -94,11 +94,13 @@ export function useRoom(code: string, join: JoinData | null, attempt: number) {
     };
   }, [code, join, attempt]);
 
-  const send = useCallback((action: Action) => {
+  const post = useCallback((msg: ClientMessage) => {
     const ws = wsRef.current;
-    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "action", action } satisfies ClientMessage));
+    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
     else toast("Keine Verbindung – einen Moment.");
   }, []);
+  const send = useCallback((action: Action) => post({ type: "action", action }), [post]);
+  const closeRoom = useCallback(() => post({ type: "closeRoom" }), [post]);
 
-  return { status, state, me, online, error, send };
+  return { status, state, me, online, error, send, closeRoom };
 }

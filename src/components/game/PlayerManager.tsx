@@ -23,7 +23,7 @@ export function PlayerManager({ state, me, online, editable, onAction, onAddLoca
     <div>
       <ol className="grid gap-1.5">
         {state.players.map((p, i) => (
-          <li key={p.id} className="flex h-13 items-center gap-2.5 rounded-xl bg-card pr-1.5 pl-4">
+          <li key={p.id} className="flex h-13 items-center gap-2.5 glass rounded-xl pr-1.5 pl-4">
             <span className="w-5 shrink-0 text-muted-foreground tabular-nums">{i + 1}</span>
             {online && <span className={cn("size-2 shrink-0 rounded-full", online.has(p.id) ? "bg-emerald-400" : "bg-foreground/25")} />}
             <span className="flex-1 truncate font-semibold">

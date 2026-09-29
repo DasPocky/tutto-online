@@ -36,26 +36,26 @@ export function GameCard({ cards, onDraw, disabled }: { cards: CardId[]; onDraw?
       onClick={() => { if (!disabled) { vibrate(12); onDraw?.(); } }}
       disabled={disabled}
       aria-label={t && flipped ? `${t.name}. Tippen für die nächste Karte` : "Karte ziehen"}
-      className="flip mx-auto block w-[min(52vw,210px)] rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring active:scale-[0.97] transition-transform disabled:cursor-default"
+      className="flip @container block aspect-[5/7] h-full max-h-[340px] min-h-[140px] max-w-full rounded-2xl outline-none transition-transform focus-visible:ring-[3px] focus-visible:ring-ring active:scale-[0.97] disabled:cursor-default"
     >
-      <div className="flip-inner relative aspect-[5/7]" data-flipped={flipped}>
-        <div className="flip-face card-back grid place-items-center rounded-2xl border-[9px] border-paper shadow-[0_12px_28px_rgba(0,0,0,.4)]">
-          <span className="-rotate-8 text-3xl font-extrabold text-paper">TUTTO</span>
-          {!disabled && <span className="absolute inset-x-0 bottom-3 text-center text-xs text-paper/85">Tippen zum Ziehen</span>}
+      <div className="flip-inner relative size-full" data-flipped={flipped}>
+        <div className="flip-face card-back grid place-items-center rounded-[7cqw] border-[4cqw] border-paper shadow-[0_16px_36px_rgba(2,8,23,.55)]">
+          <span className="-rotate-8 text-[15cqw] font-extrabold tracking-tight text-paper">TUTTO</span>
+          {!disabled && <span className="absolute inset-x-0 bottom-[6cqw] text-center text-[6.5cqw] font-semibold text-paper/85">Tippen zum Ziehen</span>}
         </div>
         <div
-          className="flip-face flip-front flex flex-col rounded-2xl border-t-[11px] bg-paper p-3 text-center text-paper-ink shadow-[0_12px_28px_rgba(0,0,0,.4)]"
+          className="flip-face flip-front flex flex-col rounded-[7cqw] border-t-[5cqw] bg-paper p-[6cqw] text-center text-paper-ink shadow-[0_16px_36px_rgba(2,8,23,.55)]"
           style={{ borderTopColor: t?.color ?? "#999" }}
         >
           {t && (
             <>
               <div className="grid flex-1 place-items-center">
-                <div className={cn("font-extrabold leading-none tracking-tight", t.big.length > 3 ? "text-4xl" : "text-5xl")} style={{ color: t.color }}>
+                <div className={cn("font-extrabold leading-none tracking-tight", t.big.length > 3 ? "text-[19cqw]" : "text-[25cqw]")} style={{ color: t.color }}>
                   {t.big}
-                  <small className="mt-1.5 block text-sm font-semibold tracking-normal text-paper-ink">{t.sub}</small>
+                  <small className="mt-[3cqw] block text-[7cqw] font-semibold tracking-normal text-paper-ink">{t.sub}</small>
                 </div>
               </div>
-              <div className="text-base font-extrabold">{t.name}</div>
+              <div className="text-[8cqw] font-extrabold">{t.name}</div>
             </>
           )}
         </div>

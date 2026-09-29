@@ -13,12 +13,12 @@ export function ShareCode({ code }: { code: string }) {
     } catch { /* abgebrochen */ }
   };
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-card p-4">
+    <div className="flex items-center justify-between gap-3 glass rounded-2xl p-4">
       <div>
         <div className="text-sm text-muted-foreground">Raumcode</div>
-        <div className="text-3xl font-extrabold tracking-[0.12em] tabular-nums">{code}</div>
+        <div className="text-3xl font-extrabold tracking-[0.18em] tabular-nums">{code}</div>
       </div>
-      <Button variant="secondary" onClick={share}><Share2 />Einladen</Button>
+      <Button onClick={share}><Share2 />Einladen</Button>
     </div>
   );
 }

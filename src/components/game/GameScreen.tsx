@@ -7,7 +7,8 @@ import { PlayerManager } from "./PlayerManager";
 import { PointsPad } from "./PointsPad";
 import { Scoreboard } from "./Scoreboard";
 import { ShareCode } from "./ShareCode";
-import { fmt } from "@/lib/utils";
+import { useViewMode } from "@/hooks/useViewMode";
+import { cn, fmt } from "@/lib/utils";
 
 interface Props {
   state: GameState;
@@ -19,23 +20,36 @@ interface Props {
   onAction: (a: Action) => void;
   onAddLocal?: (name: string) => void;
   onLeave: () => void;
+  onCloseRoom?: () => void;
 }
 
 /** Gemeinsamer Bildschirm für lokales und Online-Spiel: Lobby → Spiel → Sieg. */
 export function GameScreen(props: Props) {
   const { state, me, online, onAction, reconnecting } = props;
+  const mode = useViewMode();
   const isHost = me === null || me === state.hostId;
   const cur = state.players[state.cur];
   const canAct = isHost || me === cur?.id;
   const winner = state.winnerId ? state.players.find((p) => p.id === state.winnerId) : null;
+  const playing = state.started && !winner;
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-32">
-      <header className="sticky top-[env(safe-area-inset-top)] z-10 -mx-4 flex items-center justify-between bg-gradient-to-b from-felt-deep from-70% to-transparent px-4 py-2.5">
-        <div className="text-2xl font-extrabold tracking-tight">Tutto</div>
-        <div className="flex items-center gap-3">
-          {reconnecting && <span className="text-sm text-gold">Verbinde neu …</span>}
-          <span className="text-sm text-muted-foreground"><b className="text-foreground tabular-nums">{state.pile.length}</b> Karten</span>
+    <div className={cn("mx-auto flex max-w-xl flex-col px-4", playing ? "h-dvh-safe overflow-hidden" : "min-h-dvh-safe pb-8")}>
+      <header className="flex h-14 shrink-0 items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <Logo />
+          <div className="leading-tight">
+            <div className="text-lg font-extrabold tracking-tight">Tutto</div>
+            {props.code && <div className="text-xs font-semibold tracking-[0.18em] text-muted-foreground">{props.code}</div>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5">
+          {reconnecting && <span className="animate-pulse text-sm font-semibold text-gold">Verbinde …</span>}
+          {state.started && (
+            <span className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground ring-1 ring-inset ring-border">
+              <b className="text-foreground tabular-nums">{state.pile.length}</b> Karten
+            </span>
+          )}
           <MenuSheet {...props} isHost={isHost} />
         </div>
       </header>
@@ -43,14 +57,15 @@ export function GameScreen(props: Props) {
       {!state.started ? (
         <Lobby {...props} isHost={isHost} />
       ) : winner ? (
-        <section className="pt-[10vh] text-center">
-          <div className="text-muted-foreground">Gewonnen hat</div>
-          <div className="my-1.5 text-5xl font-extrabold leading-none tracking-tight text-gold">{winner.name}</div>
-          <div className="text-muted-foreground">{state.cloverWin ? "mit dem Kleeblatt" : `mit ${fmt(winner.score)} Punkten`}</div>
+        <section className="pt-[8vh] text-center">
+          <div className="text-6xl">🏆</div>
+          <div className="mt-3 text-muted-foreground">Gewonnen hat</div>
+          <div className="my-1.5 bg-gradient-to-b from-gold to-amber-500 bg-clip-text text-5xl font-extrabold leading-tight tracking-tight text-transparent">{winner.name}</div>
+          <div className="text-muted-foreground">{state.cloverWin ? "mit dem Kleeblatt ☘" : `mit ${fmt(winner.score)} Punkten`}</div>
           <ol className="mt-8 grid gap-1.5 text-left">
             {[...state.players].sort((a, b) => b.score - a.score).map((p, i) => (
-              <li key={p.id} className="flex justify-between rounded-xl bg-card px-4 py-3 font-semibold">
-                <span>{i + 1}. {p.name}</span><span className="tabular-nums">{fmt(p.score)}</span>
+              <li key={p.id} className={cn("flex justify-between rounded-xl px-4 py-3 font-semibold", i === 0 ? "bg-navy-600" : "glass")}>
+                <span><span className="mr-2 text-muted-foreground">{i + 1}.</span>{p.name}</span><span className="tabular-nums">{fmt(p.score)}</span>
               </li>
             ))}
           </ol>
@@ -64,57 +79,69 @@ export function GameScreen(props: Props) {
       ) : (
         <>
           <Scoreboard state={state} me={me} online={online} />
-          <div className="mt-2 text-center">
-            <div className="text-sm text-muted-foreground">Am Zug</div>
-            <div className="text-3xl font-extrabold leading-tight tracking-tight">{cur?.id === me ? "Du" : cur?.name}</div>
-          </div>
-          <div className="mt-3.5">
-            <GameCard cards={state.turnCards} onDraw={() => onAction({ type: "draw" })} disabled={!canAct} />
-          </div>
-          <TurnHint state={state} canAct={canAct} />
-          <PointsPad state={state} onAction={onAction} disabled={!canAct} />
-        </>
-      )}
 
-      {state.started && !winner && (
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-b from-transparent to-felt-deep to-30% px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-          <div className="mx-auto max-w-xl">
-            {canAct ? (
-              <div className="grid grid-cols-[1fr_1.6fr] gap-2.5">
-                {state.turnPts > 0 ? (
-                  <Confirm title="Wirklich Niete?" description={`Die ${fmt(state.turnPts)} Punkte dieser Runde verfallen.`} confirmLabel="Niete" onConfirm={() => onAction({ type: "book", zero: true })}>
-                    <Button variant="secondary" size="lg" className="bg-black/35">Niete</Button>
-                  </Confirm>
-                ) : (
-                  <Button variant="secondary" size="lg" className="bg-black/35" onClick={() => onAction({ type: "book", zero: true })}>Niete</Button>
-                )}
-                <Button size="lg" onClick={() => onAction({ type: "book" })}>
-                  {state.turnPts > 0 ? `${fmt(state.turnPts)} eintragen` : "Weiter"}
-                </Button>
-              </div>
-            ) : (
-              <div className="rounded-xl bg-black/35 py-4 text-center text-muted-foreground">
-                Warte auf <b className="text-foreground">{cur?.name}</b>
-              </div>
-            )}
+          {/* Mitte: Karte füllt den freien Platz, damit alles auf einen Bildschirm passt */}
+          <div className="flex min-h-0 flex-1 flex-col items-center pt-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm text-muted-foreground">Am Zug</span>
+              <span className="text-2xl font-extrabold tracking-tight">{cur?.id === me ? "Du" : cur?.name}</span>
+            </div>
+            <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2">
+              <GameCard cards={state.turnCards} onDraw={() => onAction({ type: "draw" })} disabled={!canAct} />
+            </div>
+            <TurnHint state={state} canAct={canAct} full={mode === "full"} />
           </div>
-        </div>
+
+          <div className="shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+            <PointsPad state={state} onAction={onAction} disabled={!canAct} mode={mode} />
+            <div className="mt-2.5">
+              {canAct ? (
+                <div className="grid grid-cols-[1fr_1.7fr] gap-2.5">
+                  {state.turnPts > 0 ? (
+                    <Confirm title="Wirklich Niete?" description={`Die ${fmt(state.turnPts)} Punkte dieser Runde verfallen.`} confirmLabel="Niete" onConfirm={() => onAction({ type: "book", zero: true })}>
+                      <Button variant="secondary" size="lg">Niete</Button>
+                    </Confirm>
+                  ) : (
+                    <Button variant="secondary" size="lg" onClick={() => onAction({ type: "book", zero: true })}>Niete</Button>
+                  )}
+                  <Button size="lg" onClick={() => onAction({ type: "book" })}>
+                    {state.turnPts > 0 ? `${fmt(state.turnPts)} eintragen` : "Weiter"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="glass rounded-xl py-4 text-center text-muted-foreground">
+                  Warte auf <b className="text-foreground">{cur?.name}</b>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function TurnHint({ state, canAct }: { state: GameState; canAct: boolean }) {
+export function Logo({ className }: { className?: string }) {
+  return (
+    <div className={cn("grid size-9 place-items-center rounded-xl bg-gradient-to-br from-navy-400 to-navy-700 text-lg font-extrabold text-white shadow-lg ring-1 ring-white/15", className)}>
+      T
+    </div>
+  );
+}
+
+function TurnHint({ state, canAct, full }: { state: GameState; canAct: boolean; full: boolean }) {
   const latest = state.turnCards[state.turnCards.length - 1];
   const card = latest ? CARD_BY_ID[latest] : null;
   return (
-    <div className="mx-auto mt-2.5 min-h-12 max-w-[34ch] text-center text-[0.95rem] leading-snug text-muted-foreground">
-      {card ? card.rule : canAct ? "Karte ziehen, dann würfeln." : "Gleich wird eine Karte gezogen."}
-      {card && canAct && card.id !== "stop" && <span className="block text-sm">Tutto geschafft? Karte nochmal antippen.</span>}
-      {state.turnCards.length > 1 && (
-        <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+    <div className="mx-auto w-full max-w-[36ch] shrink-0 text-center text-sm leading-snug text-muted-foreground">
+      <p className={cn("min-h-[2lh]", full ? "line-clamp-3" : "line-clamp-2")}>
+        {card ? card.rule : canAct ? "Karte antippen, dann würfeln." : "Gleich wird eine Karte gezogen."}
+        {card && canAct && card.id !== "stop" && full && " Tutto geschafft? Karte nochmal antippen."}
+      </p>
+      {full && state.turnCards.length > 1 && (
+        <div className="no-scrollbar mt-1.5 flex justify-center gap-1.5 overflow-x-auto">
           {state.turnCards.map((id, i) => (
-            <span key={i} className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ background: CARD_BY_ID[id].color }}>
+            <span key={i} className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ background: CARD_BY_ID[id].color }}>
               {CARD_BY_ID[id].name}
             </span>
           ))}
@@ -126,7 +153,7 @@ function TurnHint({ state, canAct }: { state: GameState; canAct: boolean }) {
 
 function Lobby({ state, me, online, code, onAction, onAddLocal, isHost }: Props & { isHost: boolean }) {
   return (
-    <section className="pt-4">
+    <section className="pt-2">
       {code && <ShareCode code={code} />}
       <h2 className="mt-6 mb-1 text-xl font-extrabold tracking-tight">Wer spielt mit?</h2>
       <p className="mb-4 text-sm text-muted-foreground">
@@ -140,7 +167,7 @@ function Lobby({ state, me, online, code, onAction, onAddLocal, isHost }: Props 
           Spiel starten
         </Button>
       ) : (
-        <p className="mt-6 rounded-xl bg-card py-4 text-center text-muted-foreground">Warte, bis der Host das Spiel startet …</p>
+        <p className="glass mt-6 rounded-xl py-4 text-center text-muted-foreground">Warte, bis der Host das Spiel startet …</p>
       )}
     </section>
   );

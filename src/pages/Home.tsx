@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, Smartphone } from "lucide-react";
 import { PIN_RE, ROOM_CODE_RE } from "@shared/protocol";
 import { cleanName } from "@shared/game";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Logo } from "@/components/game/GameScreen";
 import { navigate } from "@/hooks/useRoute";
 import { NAME_KEY, setPendingJoin } from "@/lib/storage";
 import { fmt } from "@/lib/utils";
@@ -71,14 +72,14 @@ export function Home({ initialCode }: { initialCode?: string }) {
   );
 
   return (
-    <main className="mx-auto max-w-md px-4 pt-[8vh] pb-10">
+    <main className="mx-auto flex min-h-dvh-safe max-w-md flex-col px-4 pt-[6vh] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="text-center">
-        <div className="mx-auto mb-4 grid size-16 -rotate-6 place-items-center rounded-2xl border-[5px] border-paper bg-[var(--card-back)] text-2xl font-extrabold text-paper shadow-xl">T</div>
-        <h1 className="text-6xl font-extrabold leading-none tracking-tighter">Tutto</h1>
-        <p className="mt-3 text-muted-foreground">Karten ziehen und Punkte zählen – gemeinsam an einem Tisch oder jeder am eigenen Handy.</p>
+        <Logo className="mx-auto mb-4 size-16 -rotate-6 rounded-2xl text-3xl" />
+        <h1 className="bg-gradient-to-b from-white to-navy-300 bg-clip-text text-5xl font-extrabold leading-none tracking-tighter text-transparent">Tutto</h1>
+        <p className="mx-auto mt-3 max-w-[30ch] text-muted-foreground">Karten ziehen und Punkte zählen – am Tisch oder jeder am eigenen Handy.</p>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="mt-8">
+      <Tabs value={tab} onValueChange={setTab} className="mt-7">
         <TabsList>
           <TabsTrigger value="create">Raum erstellen</TabsTrigger>
           <TabsTrigger value="join">Beitreten</TabsTrigger>
@@ -90,16 +91,16 @@ export function Home({ initialCode }: { initialCode?: string }) {
             {pinField}
             <div className="flex items-center justify-between">
               <Label>Spielziel</Label>
-              <div className="flex items-center gap-1">
-                <Button variant="secondary" size="icon" onClick={() => setTarget((t) => Math.max(1000, t - 1000))} aria-label="Weniger">−</Button>
+              <div className="flex items-center gap-1 rounded-xl bg-navy-950/45 p-1 ring-1 ring-inset ring-border">
+                <Button variant="ghost" size="icon" className="size-10" onClick={() => setTarget((t) => Math.max(1000, t - 1000))} aria-label="Weniger">−</Button>
                 <b className="min-w-[5.5ch] text-center tabular-nums">{fmt(target)}</b>
-                <Button variant="secondary" size="icon" onClick={() => setTarget((t) => Math.min(50000, t + 1000))} aria-label="Mehr">+</Button>
+                <Button variant="ghost" size="icon" className="size-10" onClick={() => setTarget((t) => Math.min(50000, t + 1000))} aria-label="Mehr">+</Button>
               </div>
             </div>
             <Button size="lg" disabled={!nameOk || !pinOk || busy} onClick={create}>
               {busy && <Loader2 className="animate-spin" />}Raum erstellen
             </Button>
-            <p className="text-sm text-muted-foreground">Mitspieler brauchen den Raumcode und die PIN. Du bist automatisch Host.</p>
+            <p className="text-sm text-muted-foreground">Mitspieler brauchen Raumcode und PIN. Du bist automatisch Host.</p>
           </Card>
         </TabsContent>
 
@@ -108,7 +109,7 @@ export function Home({ initialCode }: { initialCode?: string }) {
             <div className="grid gap-2">
               <Label htmlFor="code">Raumcode</Label>
               <Input id="code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5))}
-                autoComplete="off" autoCapitalize="characters" placeholder="ABC23" className="text-xl font-bold tracking-[0.3em]" />
+                autoComplete="off" autoCapitalize="characters" placeholder="ABC23" className="text-center text-xl font-bold tracking-[0.3em]" />
             </div>
             {nameField}
             {pinField}
@@ -119,9 +120,18 @@ export function Home({ initialCode }: { initialCode?: string }) {
 
       {error && <p role="alert" className="mt-4 rounded-xl bg-destructive/15 p-3 text-destructive">{error}</p>}
 
-      <Button variant="ghost" className="mt-6 w-full text-muted-foreground" onClick={() => navigate("/lokal")}>
-        Nur auf diesem Gerät spielen
-      </Button>
+      <button
+        type="button"
+        onClick={() => navigate("/lokal")}
+        className="glass mt-4 flex w-full items-center gap-3 rounded-2xl p-4 text-left outline-none transition active:scale-[0.99] focus-visible:ring-[3px] focus-visible:ring-ring"
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-navy-600"><Smartphone className="size-5" /></span>
+        <span className="flex-1">
+          <span className="block font-semibold">Nur auf diesem Gerät</span>
+          <span className="block text-sm text-muted-foreground">Alle spielen an einem Handy, ohne Internet</span>
+        </span>
+        <ChevronRight className="size-5 text-muted-foreground" />
+      </button>
     </main>
   );
 }

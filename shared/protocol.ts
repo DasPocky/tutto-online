@@ -7,9 +7,11 @@ export const PIN_RE = /^\d{4,8}$/;
 
 export type ClientMessage =
   | { type: "join"; name?: string; pin?: string; playerId?: string; token?: string }
-  | { type: "action"; action: Action };
+  | { type: "action"; action: Action }
+  /** Nur Host: Raum sofort und endgültig löschen */
+  | { type: "closeRoom" };
 
-export type ErrorCode = "bad_pin" | "locked" | "kicked" | "not_joined" | "rejected";
+export type ErrorCode = "bad_pin" | "locked" | "kicked" | "not_joined" | "rejected" | "closed";
 
 export type ServerMessage =
   | { type: "joined"; playerId: string; token: string }

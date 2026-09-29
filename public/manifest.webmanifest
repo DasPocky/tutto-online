@@ -1,0 +1,10 @@
+{
+  "name": "Tutto Online",
+  "short_name": "Tutto",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1730",
+  "theme_color": "#0a1730",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
