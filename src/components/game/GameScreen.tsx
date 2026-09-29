@@ -81,12 +81,12 @@ export function GameScreen(props: Props) {
           <Scoreboard state={state} me={me} online={online} />
 
           {/* Mitte: Karte füllt den freien Platz, damit alles auf einen Bildschirm passt */}
-          <div className="flex min-h-0 flex-1 flex-col items-center pt-2">
-            <div className="flex items-baseline gap-2">
+          <div className="flex min-h-0 flex-1 flex-col items-center pt-3">
+            <div className="flex items-baseline gap-2.5">
               <span className="text-sm text-muted-foreground">Am Zug</span>
               <span className="text-2xl font-extrabold tracking-tight">{cur?.id === me ? "Du" : cur?.name}</span>
             </div>
-            <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2">
+            <div className="flex min-h-0 w-full flex-1 items-center justify-center py-3">
               <GameCard cards={state.turnCards} onDraw={() => onAction({ type: "draw" })} disabled={!canAct} />
             </div>
             <TurnHint state={state} canAct={canAct} full={mode === "full"} />
@@ -133,7 +133,7 @@ function TurnHint({ state, canAct, full }: { state: GameState; canAct: boolean; 
   const latest = state.turnCards[state.turnCards.length - 1];
   const card = latest ? CARD_BY_ID[latest] : null;
   return (
-    <div className="mx-auto w-full max-w-[36ch] shrink-0 text-center text-sm leading-snug text-muted-foreground">
+    <div className="mx-auto mb-3 w-full max-w-[36ch] shrink-0 px-2 text-center text-sm leading-snug text-muted-foreground">
       <p className={cn("min-h-[2lh]", full ? "line-clamp-3" : "line-clamp-2")}>
         {card ? card.rule : canAct ? "Karte antippen, dann würfeln." : "Gleich wird eine Karte gezogen."}
         {card && canAct && card.id !== "stop" && full && " Tutto geschafft? Karte nochmal antippen."}

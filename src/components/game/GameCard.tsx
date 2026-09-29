@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CARD_BY_ID, type CardId } from "@shared/game";
-import { cn, vibrate } from "@/lib/utils";
+import { vibrate } from "@/lib/utils";
+import { CardFace } from "./CardFace";
 
 const reduceMotion = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -40,24 +41,17 @@ export function GameCard({ cards, onDraw, disabled }: { cards: CardId[]; onDraw?
     >
       <div className="flip-inner relative size-full" data-flipped={flipped}>
         <div className="flip-face card-back grid place-items-center rounded-[7cqw] border-[4cqw] border-paper shadow-[0_16px_36px_rgba(2,8,23,.55)]">
-          <span className="-rotate-8 text-[15cqw] font-extrabold tracking-tight text-paper">TUTTO</span>
+          <div className="flex -rotate-8 flex-col items-center gap-[3cqw]">
+            <svg viewBox="0 0 10 10" className="size-[22cqw]" aria-hidden="true">
+              <rect width="10" height="10" rx="2" fill="#fdfdfb" />
+              {[[3, 3], [7, 3], [5, 5], [3, 7], [7, 7]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="0.95" fill="#1f437f" />)}
+            </svg>
+            <span className="text-[15cqw] leading-none font-extrabold tracking-tight text-paper">TUTTO</span>
+          </div>
           {!disabled && <span className="absolute inset-x-0 bottom-[6cqw] text-center text-[6.5cqw] font-semibold text-paper/85">Tippen zum Ziehen</span>}
         </div>
-        <div
-          className="flip-face flip-front flex flex-col rounded-[7cqw] border-t-[5cqw] bg-paper p-[6cqw] text-center text-paper-ink shadow-[0_16px_36px_rgba(2,8,23,.55)]"
-          style={{ borderTopColor: t?.color ?? "#999" }}
-        >
-          {t && (
-            <>
-              <div className="grid flex-1 place-items-center">
-                <div className={cn("font-extrabold leading-none tracking-tight", t.big.length > 3 ? "text-[19cqw]" : "text-[25cqw]")} style={{ color: t.color }}>
-                  {t.big}
-                  <small className="mt-[3cqw] block text-[7cqw] font-semibold tracking-normal text-paper-ink">{t.sub}</small>
-                </div>
-              </div>
-              <div className="text-[8cqw] font-extrabold">{t.name}</div>
-            </>
-          )}
+        <div className="flip-face flip-front rounded-[7cqw] shadow-[0_16px_36px_rgba(2,8,23,.55)]">
+          {t && <CardFace card={t} />}
         </div>
       </div>
     </button>
