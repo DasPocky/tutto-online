@@ -4,6 +4,8 @@ Kartenstapel und Punktezähler für das Würfelspiel **Tutto**, gebaut mit React
 
 - **Online-Räume:** Der Host erstellt einen Raum mit PIN. Mitspieler öffnen den Link, geben Name und PIN ein und sehen Karten, Punkte und Zugreihenfolge live.
 - **Lokal:** Alle spielen an einem Gerät, ohne Server. Der Spielstand bleibt im Browser.
+- **Würfel wählbar:** echte Würfel am Tisch (Punkte selbst eintippen) oder der App-Würfel, der würfelt, die Auswahl prüft und Karten wie Bonus, x2, Straße, Plus/Minus, Feuerwerk und Kleeblatt automatisch wertet. Online würfelt der Server, alle sehen denselben Wurf. Die Zufallszahlen kommen aus `crypto.getRandomValues` ohne Modulo-Verzerrung.
+- **Karten & Regeln:** Über das ⓘ neben der Karte oder im Menü lässt sich jede Karte ausführlich nachlesen.
 - **Ansicht „Einfach“ oder „Voll“** (im Menü, pro Gerät): große Tasten und wenig Text oder alle Tasten und Infos. Das Spiel passt ohne Scrollen auf einen Handy-Bildschirm und lässt sich als App zum Home-Bildschirm hinzufügen.
 
 ## Voraussetzungen

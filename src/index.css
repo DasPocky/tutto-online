@@ -131,3 +131,11 @@
 @utility min-h-dvh-safe {
   min-height: calc(100dvh - env(safe-area-inset-top, 0px));
 }
+
+@keyframes dice-in {
+  0% { transform: translateY(-14px) rotate(-120deg) scale(0.6); opacity: 0; }
+  70% { transform: translateY(2px) rotate(8deg) scale(1.04); opacity: 1; }
+  100% { transform: none; }
+}
+.dice-in { animation: dice-in 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+@media (prefers-reduced-motion: reduce) { .dice-in { animation: none; } }

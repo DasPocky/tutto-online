@@ -1,6 +1,9 @@
 import { CARD_BY_ID, type Action, type GameState } from "@shared/game";
 import { Button } from "@/components/ui/button";
 import { Confirm } from "@/components/Confirm";
+import { CardGuide } from "./CardGuide";
+import { DiceActions, DicePanel } from "./Dice";
+import { DiceModePicker } from "./DiceModePicker";
 import { GameCard } from "./GameCard";
 import { MenuSheet } from "./MenuSheet";
 import { PlayerManager } from "./PlayerManager";
@@ -32,6 +35,11 @@ export function GameScreen(props: Props) {
   const canAct = isHost || me === cur?.id;
   const winner = state.winnerId ? state.players.find((p) => p.id === state.winnerId) : null;
   const playing = state.started && !winner;
+  const appDice = state.diceMode === "app";
+  const latest = state.turnCards[state.turnCards.length - 1];
+  const d = state.dice;
+  // Mit App-Würfel nur ziehen, wenn es gerade erlaubt ist – sonst würde ein versehentliches Antippen stören
+  const canDraw = !appDice || !latest || (!!d && d.tutto && !d.bust && latest !== "fire" && latest !== "clover" && latest !== "stop");
 
   return (
     <div className={cn("mx-auto flex max-w-xl flex-col px-4", playing ? "h-dvh-safe overflow-hidden" : "min-h-dvh-safe pb-8")}>
@@ -87,15 +95,19 @@ export function GameScreen(props: Props) {
               <span className="text-2xl font-extrabold tracking-tight">{cur?.id === me ? "Du" : cur?.name}</span>
             </div>
             <div className="flex min-h-0 w-full flex-1 items-center justify-center py-3">
-              <GameCard cards={state.turnCards} onDraw={() => onAction({ type: "draw" })} disabled={!canAct} />
+              <GameCard cards={state.turnCards} onDraw={() => onAction({ type: "draw" })} disabled={!canAct || !canDraw} />
             </div>
-            <TurnHint state={state} canAct={canAct} full={mode === "full"} />
+            <TurnHint state={state} canAct={canAct} full={mode === "full"} appDice={appDice} />
           </div>
 
           <div className="shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-            <PointsPad state={state} onAction={onAction} disabled={!canAct} mode={mode} />
+            {appDice
+              ? <DicePanel state={state} onAction={onAction} disabled={!canAct} />
+              : <PointsPad state={state} onAction={onAction} disabled={!canAct} mode={mode} />}
             <div className="mt-2.5">
-              {canAct ? (
+              {canAct && appDice ? (
+                <DiceActions state={state} onAction={onAction} />
+              ) : canAct ? (
                 <div className="grid grid-cols-[1fr_1.7fr] gap-2.5">
                   {state.turnPts > 0 ? (
                     <Confirm title="Wirklich Niete?" description={`Die ${fmt(state.turnPts)} Punkte dieser Runde verfallen.`} confirmLabel="Niete" onConfirm={() => onAction({ type: "book", zero: true })}>
@@ -129,24 +141,28 @@ export function Logo({ className }: { className?: string }) {
   );
 }
 
-function TurnHint({ state, canAct, full }: { state: GameState; canAct: boolean; full: boolean }) {
+function TurnHint({ state, canAct, full, appDice }: { state: GameState; canAct: boolean; full: boolean; appDice: boolean }) {
   const latest = state.turnCards[state.turnCards.length - 1];
   const card = latest ? CARD_BY_ID[latest] : null;
+  const idle = canAct ? (appDice ? "Karte antippen, dann würfeln." : "Karte antippen, dann würfeln.") : "Gleich wird eine Karte gezogen.";
   return (
-    <div className="mx-auto mb-3 w-full max-w-[36ch] shrink-0 px-2 text-center text-sm leading-snug text-muted-foreground">
-      <p className={cn("min-h-[2lh]", full ? "line-clamp-3" : "line-clamp-2")}>
-        {card ? card.rule : canAct ? "Karte antippen, dann würfeln." : "Gleich wird eine Karte gezogen."}
-        {card && canAct && card.id !== "stop" && full && " Tutto geschafft? Karte nochmal antippen."}
-      </p>
-      {full && state.turnCards.length > 1 && (
-        <div className="no-scrollbar mt-1.5 flex justify-center gap-1.5 overflow-x-auto">
-          {state.turnCards.map((id, i) => (
-            <span key={i} className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ background: CARD_BY_ID[id].color }}>
-              {CARD_BY_ID[id].name}
-            </span>
-          ))}
-        </div>
-      )}
+    <div className="mx-auto mb-3 flex w-full max-w-[40ch] shrink-0 items-start gap-2 px-2 text-sm leading-snug text-muted-foreground">
+      <div className="min-w-0 flex-1 text-center">
+        <p className={cn("min-h-[2lh]", full ? "line-clamp-3" : "line-clamp-2")}>
+          {card ? card.rule : idle}
+          {card && canAct && card.id !== "stop" && full && !appDice && " Tutto geschafft? Karte nochmal antippen."}
+        </p>
+        {full && state.turnCards.length > 1 && (
+          <div className="no-scrollbar mt-1.5 flex justify-center gap-1.5 overflow-x-auto">
+            {state.turnCards.map((id, i) => (
+              <span key={i} className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset" style={{ color: CARD_BY_ID[id].color, boxShadow: "none", background: "rgb(253 253 251 / 0.92)" }}>
+                {CARD_BY_ID[id].name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      <CardGuide focus={latest} />
     </div>
   );
 }
@@ -162,6 +178,7 @@ function Lobby({ state, me, online, code, onAction, onAddLocal, isHost }: Props 
           : "Die Reihenfolge ist die Zugreihenfolge."}
       </p>
       <PlayerManager state={state} me={me} online={online} editable={isHost} onAction={onAction} onAddLocal={onAddLocal} />
+      <DiceModePicker state={state} editable={isHost} onAction={onAction} className="mt-5" />
       {isHost ? (
         <Button size="lg" className="mt-6 w-full" disabled={!state.players.length} onClick={() => onAction({ type: "start" })}>
           Spiel starten

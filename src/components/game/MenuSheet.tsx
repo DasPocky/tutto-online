@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Confirm } from "@/components/Confirm";
 import { PlayerManager } from "./PlayerManager";
 import { ShareCode } from "./ShareCode";
+import { CardGuide } from "./CardGuide";
+import { DiceModePicker } from "./DiceModePicker";
 import { setViewMode, useViewMode } from "@/hooks/useViewMode";
 import { cn, fmt } from "@/lib/utils";
 
@@ -46,7 +48,13 @@ export function MenuSheet({ state, me, online, isHost, code, onAction, onAddLoca
             ))}
           </div>
 
+          <CardGuide>
+            <Button variant="secondary" className="mb-4 w-full justify-start">📖 Karten & Regeln nachschlagen</Button>
+          </CardGuide>
+
           {code && <ShareCode code={code} />}
+
+          <DiceModePicker state={state} editable={isHost} onAction={onAction} className="mt-4" />
 
           {isHost && (
             <div className="mt-4 grid gap-2">
